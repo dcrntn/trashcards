@@ -1,14 +1,11 @@
-use tui::{
-    layout::{Layout, Constraint, Direction},
-    widgets::{Paragraph, List, ListItem, Block, Borders},
-    Frame,
-};
-use tui::backend::CrosstermBackend;
+use tui::{Frame, backend::CrosstermBackend, widgets::{Block, Borders, Paragraph, List, ListItem}, layout::{Layout, Constraint, Direction}};
+use crate::app::key_handler::AppState;
+use crate::app::file_browser::FileBrowser;
 
-pub fn draw_layout(f: &mut Frame<CrosstermBackend<std::io::Stdout>>, size: tui::layout::Rect, main_message: &str) {
+pub fn draw_layout(f: &mut Frame<CrosstermBackend<std::io::Stdout>>, size: tui::layout::Rect, current_state: AppState, file_browser: &FileBrowser) {
     // Define the layout with three areas: upper bar, side menu, and main content area
     let layout = Layout::default()
-        .direction(Direction::Vertical) // Overall layout is vertical
+        .direction(Direction::Vertical)
         .constraints(
             [
                 Constraint::Length(3), // Upper bar with a fixed height of 3 units
@@ -18,8 +15,16 @@ pub fn draw_layout(f: &mut Frame<CrosstermBackend<std::io::Stdout>>, size: tui::
         )
         .split(size);
 
-    // Upper bar block for displaying information
-    let upper_bar = Paragraph::new("Info Bar: Some useful information here...")
+    // Info Bar block for displaying useful information
+    let info_bar_text = if let Some(ref selected_file) = file_browser.selected_file {
+        // Display the full path (current directory + file name)
+        format!("Selected file: {}/{}", file_browser.current_directory, selected_file)
+    } else {
+        String::from("Info Bar: No file selected")
+    };
+
+    // Upper bar block for displaying information (including selected file)
+    let upper_bar = Paragraph::new(format!("Info Bar: {}", info_bar_text))
         .block(Block::default().borders(Borders::ALL).title("Upper Bar"))
         .alignment(tui::layout::Alignment::Center);
 
@@ -28,7 +33,7 @@ pub fn draw_layout(f: &mut Frame<CrosstermBackend<std::io::Stdout>>, size: tui::
 
     // Split the remaining space (layout[1]) horizontally into the side menu and the main content
     let horizontal_layout = Layout::default()
-        .direction(Direction::Horizontal) // Split horizontally for side menu and content
+        .direction(Direction::Horizontal)
         .constraints(
             [
                 Constraint::Percentage(20), // Side menu takes 20% of the width
@@ -47,12 +52,35 @@ pub fn draw_layout(f: &mut Frame<CrosstermBackend<std::io::Stdout>>, size: tui::
     ])
     .block(Block::default().borders(Borders::ALL).title("Menu"));
 
-    // Main content block with dynamic message
-    let welcome_message = Paragraph::new(main_message)
-        .block(Block::default().borders(Borders::ALL).title("Welcome"))
-        .alignment(tui::layout::Alignment::Center);
-
-    // Render side menu and welcome message in their respective areas
+    // Render the side menu
     f.render_widget(side_menu, horizontal_layout[0]);
-    f.render_widget(welcome_message, horizontal_layout[1]);
+
+    // Render the main content based on the current state
+    match current_state {
+        AppState::Welcome => {
+            let welcome_message = Paragraph::new("Welcome to Trashcards!\nPress a key to start.")
+                .block(Block::default().borders(Borders::ALL).title("Welcome"));
+            f.render_widget(welcome_message, horizontal_layout[1]);
+        }
+        AppState::Settings => {
+            let settings_message = Paragraph::new("Settings widget is here! Press 'l' to select the dataset you want to use")
+                .block(Block::default().borders(Borders::ALL).title("Settings"));
+            f.render_widget(settings_message, horizontal_layout[1]);
+        }
+        AppState::Info => {
+            let info_message = Paragraph::new("Here is some info about the app!")
+                .block(Block::default().borders(Borders::ALL).title("Info"));
+            f.render_widget(info_message, horizontal_layout[1]);
+        }
+        AppState::FileBrowser => {
+            // Only show file browser in the main content area
+            file_browser.draw_popup(f, horizontal_layout[1]);
+        }
+        AppState::Exit => {
+            // Do nothing or maybe render an "Exiting" message
+            let exit_message = Paragraph::new("Exiting the application...")
+                .block(Block::default().borders(Borders::ALL).title("Exit"));
+            f.render_widget(exit_message, horizontal_layout[1]);
+        }
+    }
 }
