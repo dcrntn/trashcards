@@ -2,3 +2,5 @@
 pub mod layout;
 pub mod key_handler;
 pub mod file_browser;
+pub mod file_handler;
+pub mod game;

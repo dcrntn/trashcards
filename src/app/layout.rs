@@ -1,8 +1,9 @@
 use tui::{Frame, backend::CrosstermBackend, widgets::{Block, Borders, Paragraph, List, ListItem}, layout::{Layout, Constraint, Direction}};
 use crate::app::key_handler::AppState;
 use crate::app::file_browser::FileBrowser;
+use crate::app::game::Game;
 
-pub fn draw_layout(f: &mut Frame<CrosstermBackend<std::io::Stdout>>, size: tui::layout::Rect, current_state: AppState, file_browser: &FileBrowser) {
+pub fn draw_layout(f: &mut Frame<CrosstermBackend<std::io::Stdout>>, size: tui::layout::Rect, current_state: AppState, file_browser: &FileBrowser, game: &Game) {
     // Define the layout with three areas: upper bar, side menu, and main content area
     let layout = Layout::default()
         .direction(Direction::Vertical)
@@ -58,7 +59,7 @@ pub fn draw_layout(f: &mut Frame<CrosstermBackend<std::io::Stdout>>, size: tui::
     // Render the main content based on the current state
     match current_state {
         AppState::Welcome => {
-            let welcome_message = Paragraph::new("Welcome to Trashcards!\nPress a key to start.")
+            let welcome_message = Paragraph::new("Welcome to Trashcards!\nPress 's' key to start.")
                 .block(Block::default().borders(Borders::ALL).title("Welcome"));
             f.render_widget(welcome_message, horizontal_layout[1]);
         }
@@ -75,6 +76,14 @@ pub fn draw_layout(f: &mut Frame<CrosstermBackend<std::io::Stdout>>, size: tui::
         AppState::FileBrowser => {
             // Only show file browser in the main content area
             file_browser.draw_popup(f, horizontal_layout[1]);
+        }
+        AppState::Game => {
+            game.draw_popup(f, horizontal_layout[1]);
+        }
+        AppState::SelectFile => {
+            let info_message = Paragraph::new("Select a file first in the settigns!")
+                .block(Block::default().borders(Borders::ALL).title("Info"));
+            f.render_widget(info_message, horizontal_layout[1]);
         }
         AppState::Exit => {
             // Do nothing or maybe render an "Exiting" message

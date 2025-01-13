@@ -7,6 +7,7 @@ use crossterm::{
 use std::{io, thread, time::Duration};
 use crossterm::event::{EnableMouseCapture, DisableMouseCapture};
 use app::file_browser::{FileBrowser}; // Import FileBrowser module
+use app::game::{Game};
 use app::key_handler::{self, AppState};
 
 mod app; // Assuming app contains key_handler, layout, and file_browser modules
@@ -24,26 +25,31 @@ fn main() -> Result<(), io::Error> {
 
     // Initialize FileBrowser instance
     let mut file_browser = FileBrowser::new();
+    let mut game = Game::new();
 
     loop {
         terminal.draw(|f| {
             let size = f.size();
 
             // Call the layout drawing function from app/layout.rs
-            app::layout::draw_layout(f, size, current_state, &file_browser);
+            app::layout::draw_layout(f, size, current_state, &file_browser, &game);
 
         })?;
 
         // Wait for a key press and handle input
         if let Event::Key(key) = event::read()? {
             // Update the state based on key press
-            current_state = key_handler::handle_keypress(key.code, current_state, &mut file_browser); 
+            current_state = key_handler::handle_keypress(key.code, current_state, &mut file_browser, &mut game); 
 
             // Handle file browser state and keypresses
             if current_state == AppState::FileBrowser {
                 file_browser.handle_keypress(key.code);  // Handle file browser navigation
             }
 
+            // Handle game state and keypress
+            if current_state == AppState::Game {
+                game.handle_keypress(key.code);
+            }
             if matches!(current_state, AppState::Exit) {
                 exit_flag = true; // Set the flag to exit the loop
             }

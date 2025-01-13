@@ -1,5 +1,6 @@
 use crossterm::event::KeyCode;
 use crate::app::file_browser::{FileBrowser};
+use crate::app::game::{Game};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AppState {
@@ -8,9 +9,11 @@ pub enum AppState {
     Info,
     FileBrowser,  // New state for file browser
     Exit,
+    Game,
+    SelectFile
 }
 
-pub fn handle_keypress(key: KeyCode, current_state: AppState, file_browser: &mut FileBrowser) -> AppState {
+pub fn handle_keypress(key: KeyCode, current_state: AppState, file_browser: &mut FileBrowser, game: &mut Game) -> AppState {
     match key {
         KeyCode::Char('1') => AppState::Welcome,
         KeyCode::Char('2') => {
@@ -34,6 +37,23 @@ pub fn handle_keypress(key: KeyCode, current_state: AppState, file_browser: &mut
             } else {
                 current_state
             }
+        }
+        KeyCode::Char('s') => {
+            if current_state == AppState::Welcome {
+                game.toggle(file_browser);
+                if let Some(ref selected_file) = file_browser.selected_file{
+                    if game.is_open {
+                        AppState::Game
+                    } else {
+                        AppState::Welcome
+                    }
+                } else {
+                    AppState::SelectFile
+                }
+            } else {
+                current_state
+            }
+
         }
         
 
