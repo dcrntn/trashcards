@@ -9,8 +9,7 @@ use crossterm::event::{EnableMouseCapture, DisableMouseCapture};
 use app::file_browser::{FileBrowser}; // Import FileBrowser module
 use app::game::{Game};
 use app::key_handler::{self, AppState};
-
-mod app; // Assuming app contains key_handler, layout, and file_browser modules
+mod app;
 
 fn main() -> Result<(), io::Error> {
     // Setup terminal
