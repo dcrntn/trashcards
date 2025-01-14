@@ -41,7 +41,7 @@ pub fn handle_keypress(key: KeyCode, current_state: AppState, file_browser: &mut
         KeyCode::Char('s') => {
             if current_state == AppState::Welcome {
                 game.toggle(file_browser);
-                if let Some(ref selected_file) = file_browser.selected_file{
+                if let Some(ref _selected_file) = file_browser.selected_file{
                     if game.is_open {
                         AppState::Game
                     } else {
@@ -75,12 +75,13 @@ mod tests {
     #[test]
     fn test_handle_keypress_welcome() {
         let mut file_browser = FileBrowser::new();
+        let mut game = Game::new();
 
         // Initial state is Settings
         let current_state = AppState::Settings;
 
         // Simulate pressing '1'
-        let new_state = handle_keypress(KeyCode::Char('1'), current_state, &mut file_browser);
+        let new_state = handle_keypress(KeyCode::Char('1'), current_state, &mut file_browser, &mut game);
 
         // Assert that the state transitions to Welcome
         assert_eq!(new_state, AppState::Welcome);
@@ -90,12 +91,13 @@ mod tests {
     #[test]
     fn test_handle_keypress_settings() {
         let mut file_browser = FileBrowser::new();
+        let mut game = Game::new();
 
         // Initial state is Welcome
         let current_state = AppState::Welcome;
 
         // Simulate pressing '2'
-        let new_state = handle_keypress(KeyCode::Char('2'), current_state, &mut file_browser);
+        let new_state = handle_keypress(KeyCode::Char('2'), current_state, &mut file_browser, &mut game);
 
         // Assert that the state transitions to Settings
         assert_eq!(new_state, AppState::Settings);
@@ -105,12 +107,13 @@ mod tests {
     #[test]
     fn test_handle_keypress_info() {
         let mut file_browser = FileBrowser::new();
+        let mut game = Game::new();
 
         // Initial state is Settings
         let current_state = AppState::Settings;
 
         // Simulate pressing '3'
-        let new_state = handle_keypress(KeyCode::Char('3'), current_state, &mut file_browser);
+        let new_state = handle_keypress(KeyCode::Char('3'), current_state, &mut file_browser, &mut game);
 
         // Assert that the state transitions to Info
         assert_eq!(new_state, AppState::Info);
@@ -120,12 +123,13 @@ mod tests {
     #[test]
     fn test_handle_keypress_exit() {
         let mut file_browser = FileBrowser::new();
+        let mut game = Game::new();
 
         // Initial state is Info
         let current_state = AppState::Info;
 
         // Simulate pressing 'q'
-        let new_state = handle_keypress(KeyCode::Char('q'), current_state, &mut file_browser);
+        let new_state = handle_keypress(KeyCode::Char('q'), current_state, &mut file_browser, &mut game);
 
         // Assert that the state transitions to Exit
         assert_eq!(new_state, AppState::Exit);
@@ -135,19 +139,20 @@ mod tests {
     #[test]
     fn test_handle_keypress_toggle_file_browser_from_settings() {
         let mut file_browser = FileBrowser::new();
+        let mut game = Game::new();
 
         // Initial state is Settings
         let current_state = AppState::Settings;
 
         // Simulate pressing 'l' to toggle the file browser
-        let new_state = handle_keypress(KeyCode::Char('l'), current_state, &mut file_browser);
+        let new_state = handle_keypress(KeyCode::Char('l'), current_state, &mut file_browser, &mut game);
 
         // Assert that the state transitions to FileBrowser
         assert_eq!(new_state, AppState::FileBrowser);
         assert!(file_browser.is_open, "File browser should be open after pressing 'l'");
 
         // Simulate pressing '2' to go to the Settings
-        let new_state_after_close = handle_keypress(KeyCode::Char('2'), new_state, &mut file_browser);
+        let new_state_after_close = handle_keypress(KeyCode::Char('2'), new_state, &mut file_browser, &mut game);
 
         // Assert that the file browser is closed and the state remains Settings
         assert_eq!(new_state_after_close, AppState::Settings);
@@ -158,12 +163,13 @@ mod tests {
     #[test]
     fn test_handle_keypress_no_transition() {
         let mut file_browser = FileBrowser::new();
+        let mut game = Game::new();
 
         // Initial state is Settings
         let current_state = AppState::Settings;
 
         // Simulate pressing an unhandled key (e.g., 'x')
-        let new_state = handle_keypress(KeyCode::Char('x'), current_state, &mut file_browser);
+        let new_state = handle_keypress(KeyCode::Char('x'), current_state, &mut file_browser, &mut game);
 
         // Assert that the state remains the same
         assert_eq!(new_state, AppState::Settings);

@@ -141,3 +141,93 @@ impl Game {
     
     
 }
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_game_initialization() {
+        let game = Game::new();
+        assert_eq!(game.is_open, false);
+        assert_eq!(game.current_row, 0);
+        assert_eq!(game.current_col, 0);
+        assert_eq!(game.data.len(), 0);
+        assert_eq!(game.headers.len(), 0);
+        assert_eq!(game.answer_visible, false);
+    }
+
+    #[test]
+    fn test_game_toggle() {
+        let mut game = Game::new();
+        let file_browser = FileBrowser::new(); // Mock file browser
+
+        game.toggle(&file_browser);
+        assert!(game.is_open);
+
+        game.toggle(&file_browser);
+        assert!(!game.is_open);
+    }
+
+    #[test]
+    fn test_next_question() {
+        let mut game = Game::new();
+        game.headers = vec!["Question".to_string(), "Answer".to_string()];
+        game.data = vec![
+            vec!["What is Rust?".to_string(), "A systems programming language.".to_string()],
+            vec!["What is Cargo?".to_string(), "Rust's package manager.".to_string()],
+        ];
+
+        assert_eq!(game.current_row, 0);
+        assert_eq!(game.current_col, 0);
+
+        // Simulate showing the first question's answer
+        game.next();
+        assert!(game.answer_visible);
+        assert_eq!(game.current_col, 1);
+
+        // Simulate moving to the next question
+        // Needs double press cuz at the end there is a msg that indicates the next question is coming up!
+        game.next();
+        game.next();
+        assert!(!game.answer_visible);
+        assert_eq!(game.current_row, 1);
+        assert_eq!(game.current_col, 0);
+    }
+
+    #[test]
+    fn test_answer_visibility_toggle() {
+        let mut game = Game::new();
+        game.headers = vec!["Question".to_string(), "Answer".to_string()];
+        game.data = vec![vec!["What is Rust?".to_string(), "A systems programming language.".to_string()]];
+
+        assert!(!game.answer_visible);
+
+        // Show answer
+        game.next();
+        assert!(game.answer_visible);
+
+        // Hide answer
+        game.next();
+        assert!(!game.answer_visible);
+    }
+
+    #[test]
+    fn test_loop_back_to_start() {
+        let mut game = Game::new();
+        game.headers = vec!["Question".to_string(), "Answer".to_string()];
+        game.data = vec![vec!["What is Rust?".to_string(), "A systems programming language.".to_string()]];
+
+        // Move through the single question-answer pair
+        game.next();
+        // Needs double press cuz at the end there is a msg that indicates the next question is coming up!
+        game.next();
+        game.next();
+
+        // Should loop back to the first question
+        assert_eq!(game.current_row, 0);
+        assert_eq!(game.current_col, 0);
+        assert!(!game.answer_visible);
+    }
+}
